@@ -16,14 +16,14 @@ public class Main {
 
         int guesses = 0, wins = 0, loss = 0;
         double mean;
-        String guess = "";
-        String result = "";
+        String guess;
+        String result;
         boolean won = false;
-        for(int t = 0; t < 10000; t++) {
+        for (int t = 0; t < 10000; t++) {
             Tester tester = new Tester("foo");
 
             while (guesses < 6 && !won) {
-                guess = solver.getBest();
+//                guess = solver.getBest();
 //                result = tester.processGuess(guess);
 
                 System.out.println("\nEnter a guess " + "(" + "I suggest " + solver.getBest() + ")");

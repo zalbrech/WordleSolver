@@ -16,18 +16,18 @@ public class Solver {
     private Set<Character> greenLetters; // candidate must contain all green letters
 
 
-    private List<Set<Character>> yellowList;
-    private List<Set<Character>> greenList;
+    private final List<Set<Character>> yellowList;
+    private final List<Set<Character>> greenList;
     private List<Map<Character, Integer>> posList;
 
     private Map<String, Integer> dict;
     private Map<Character, Integer> freq;
-    private Set<String> master;
+    private final Set<String> master;
 
-    private Set<Character> duplicates = new HashSet<>();
-    private Set<Character> singles = new HashSet<>();
+    private final Set<Character> duplicates;
+    private final Set<Character> singles;
 
-    private PriorityQueue<Map.Entry<Character, Integer>> freqPq;
+    private final PriorityQueue<Map.Entry<Character, Integer>> freqPq;
 
     private String best;
 
@@ -44,7 +44,10 @@ public class Solver {
 
         this.freqPq = new PriorityQueue<>(Comparator.comparingInt(Map.Entry::getValue));
 
-        String s = "";
+        this.duplicates = new HashSet<>();
+        this.singles = new HashSet<>();
+
+        String s;
         // populate master list
         try {
             BufferedReader input = new BufferedReader(new FileReader("src/main/java/words.txt"));
@@ -57,7 +60,6 @@ public class Solver {
         }
 
         this.populate();
-//        this.score();
         this.findBest();
     }
 
@@ -77,14 +79,14 @@ public class Solver {
         }
 
         System.out.println(this.master);
-//        this.printScores();
+        this.printScores();
         this.findBest();
     }
 
     private int score(String s) {
         int score = 0;
-        for(int i = 0; i < s.length(); i++) {
-            score += posList.get(i).get(s.charAt(i));
+        for (int i = 0; i < s.length(); i++) {
+            score += posList.get(i).get(s.charAt(i)) + (freq.get(s.charAt(i)) / 8);
         }
         return score;
     }
@@ -143,7 +145,6 @@ public class Solver {
 
     // duplicate code - might be a way to consolidate into one check method
     public boolean checkYellow(Set<Character> set, String st) {
-//        if (set.size() < 1) return true;
         for (char c : set) {
             if (st.indexOf(c) < 0) return false;
         }
@@ -151,7 +152,6 @@ public class Solver {
     }
 
     public boolean checkGreen(Set<Character> set, String st) {
-//        if (set.size() < 1) return true;
         for (char c : set) {
             if (st.indexOf(c) < 0) return false;
         }
@@ -177,13 +177,6 @@ public class Solver {
         return false;
     }
 
-    //TODO: Duplicate bug - two green letters are not currently added to duplicates
-    // i.e brood (bgggb) doesn't recognize that 'o' is a duplicate letter
-    // (possible solution is to iterate through green index to see if any other indexes contain that letter?)
-
-    //TODO: return countSingles causing bug
-    // fever(bbbgb) is not getting to the final character 'r' because of return countSingles(c).
-    // Words that end in 'er' are included in subsequent dictionaries
     private boolean checkBlackAndSingleLetters(String s) {
         boolean flag = false;
         for (int i = 0; i < s.length(); i++) {
@@ -196,6 +189,13 @@ public class Solver {
             }
         }
         return flag;
+    }
+
+    public boolean checkSingles(char c, boolean isBlack) {
+        if (isBlack) {
+            return yellowLetters.contains(c) || greenLetters.contains(c);
+        }
+        return blackLetters.contains(c);
     }
 
     public boolean countSingles(String s) {
@@ -214,8 +214,7 @@ public class Solver {
         return false;
     }
 
-    public boolean checkSingles(char c, boolean isGreen) {
-        if(isGreen) return blackLetters.contains(c);
+    public boolean checkDuplicates(char c) {
         return yellowLetters.contains(c) || greenLetters.contains(c);
     }
 
@@ -232,45 +231,41 @@ public class Solver {
         return false;
     }
 
-    public boolean checkDuplicates(char c, boolean isGreen) {
-        if(isGreen) {
-            return yellowLetters.contains(c) && !blackLetters.contains(c);
-        }
-        return greenLetters.contains(c);
-    }
-
     public int processResult(String guess, String result) {
         int greenCount = 0;
         for (int i = 0; i < result.length(); i++) {
             switch (result.charAt(i)) {
                 case 'B':
                     this.addBlackLetter(guess.charAt(i));
-                    if(this.checkSingles(guess.charAt(i), false)) {
+                    if(this.checkSingles(guess.charAt(i), true)) {
                         this.addSingle(guess.charAt(i));
                     }
 //                    System.out.println("adding " + guess.charAt(i) + " to black letters");
 //                    System.out.println(this.blackLetters);
                     break;
                 case 'Y':
-                    this.addYellowIndex(i, guess.charAt(i));
-                    this.addYellowLetter(guess.charAt(i));
-                    if(this.checkDuplicates(guess.charAt(i), false)) {
+                    if(this.checkDuplicates(guess.charAt(i))) {
                         this.addDuplicate(guess.charAt(i));
                     }
+                    if(this.checkSingles(guess.charAt(i), false)) {
+                        this.addSingle(guess.charAt(i));
+                    }
+                    this.addYellowIndex(i, guess.charAt(i));
+                    this.addYellowLetter(guess.charAt(i));
                     break;
                 case 'G':
+                    if(this.checkDuplicates(guess.charAt(i))) {
+                        this.addDuplicate(guess.charAt(i));
+                    }
+                    if(this.checkSingles(guess.charAt(i), false)) {
+                        this.addSingle(guess.charAt(i));
+                    }
                     this.addGreenIndex(i, guess.charAt(i));
                     this.addGreenLetter(guess.charAt(i));
                     // TODO: THIS MIGHT BE A BUG. TRYING TO SOLVE FOLLOWING ISSUE:
-                    //  slate (bybbg) -> belle (gbgbg)
-                    //  l was added to duplicates and singles, but should only be in singles.
-                    yellowLetters.remove(guess.charAt(i));
-                    if(this.checkSingles(guess.charAt(i), true)) {
-                        this.addSingle(guess.charAt(i));
-                    }
-                    if(this.checkDuplicates(guess.charAt(i), true)) {
-                        this.addDuplicate(guess.charAt(i));
-                    }
+                    //  s l ate (b y bbg) -> be ll e (gb bg g)
+                    //  [l] was added to duplicates and singles, but should only be in singles
+//                    yellowLetters.remove(guess.charAt(i));
                     greenCount++;
                     break;
                 default:
@@ -289,6 +284,9 @@ public class Solver {
     public void update() {
         master.removeIf(s -> checkGreenYellowLetters(s) || checkIndex(s) || checkBlackAndSingleLetters(s) || countDuplicates(s));
 
+        this.greenLetters = new HashSet<>();
+        this.yellowLetters = new HashSet<>();
+        this.blackLetters = new HashSet<>();
         //TODO -> Keep old code until more thorough testing has been done
 //        for (Iterator<String> iterator = master.iterator(); iterator.hasNext(); ) {
 //            String st = iterator.next();
