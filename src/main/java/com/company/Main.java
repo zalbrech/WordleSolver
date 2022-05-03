@@ -10,7 +10,7 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("LAST UPDATED 4/24/22 7:43 PM");
+        System.out.println("LAST UPDATED 5/2 8:18 PM");
         Solver solver = new Solver();
         Scanner scanner = new Scanner(System.in);
 
