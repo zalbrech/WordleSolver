@@ -86,6 +86,7 @@ public class Solver {
     private int score(String s) {
         int score = 0;
         for (int i = 0; i < s.length(); i++) {
+//            score += posList.get(i).get(s.charAt(i));
             score += posList.get(i).get(s.charAt(i)) + (freq.get(s.charAt(i)) / 8);
         }
         return score;
