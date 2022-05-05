@@ -1,7 +1,5 @@
-//TODO: make appropriate fields final
 //TODO: organize method order
 //TODO: clean up comments
-//TODO: write a Tester class
 
 package com.company;
 
@@ -78,8 +76,8 @@ public class Solver {
             dict.put(s, this.score(s)); // add word to dictionary
         }
 
-        System.out.println(this.master);
-        this.printScores();
+//        System.out.println(this.master);
+//        this.printScores();
         this.findBest();
     }
 
@@ -143,6 +141,10 @@ public class Solver {
     public void addGreenIndex(int i, char c) { this.greenList.get(i).add(c); }
 
     public void addSingle(char c) { this.singles.add(c); }
+
+    public Set<Character> getSingles() { return new HashSet<>(this.singles); }
+
+    public Set<Character> getDuplicates() { return new HashSet<>(this.duplicates); }
 
     // duplicate code - might be a way to consolidate into one check method
     public boolean checkYellow(Set<Character> set, String st) {
@@ -263,9 +265,9 @@ public class Solver {
                     }
                     this.addGreenIndex(i, guess.charAt(i));
                     this.addGreenLetter(guess.charAt(i));
-                    // TODO: THIS MIGHT BE A BUG. TRYING TO SOLVE FOLLOWING ISSUE:
-                    //  s l ate (b y bbg) -> be ll e (gb bg g)
-                    //  [l] was added to duplicates and singles, but should only be in singles
+                    // THIS MIGHT BE A BUG. TRYING TO SOLVE FOLLOWING ISSUE:
+                    // s l ate (b y bbg) -> be ll e (gb bg g)
+                    // [l] was added to duplicates and singles, but should only be in singles
 //                    yellowLetters.remove(guess.charAt(i));
                     greenCount++;
                     break;
@@ -276,8 +278,10 @@ public class Solver {
 
         if(this.master.size() < 2) return greenCount;
 
-        System.out.println(this.blackLetters + "\n" + this.yellowLetters + "\n" + this.greenLetters);
-        System.out.println("duplicates " + this.duplicates + "\n" + "singles: " + this.singles);
+
+//        System.out.println(this.blackLetters + "\n" + this.yellowLetters + "\n" + this.greenLetters);
+//        System.out.println("duplicates " + this.duplicates + "\n" + "singles: " + this.singles);
+
         this.update();
         return greenCount;
     }
@@ -288,7 +292,8 @@ public class Solver {
         this.greenLetters = new HashSet<>();
         this.yellowLetters = new HashSet<>();
         this.blackLetters = new HashSet<>();
-        //TODO -> Keep old code until more thorough testing has been done
+        // -> Keep old code until more thorough testing has been done
+
 //        for (Iterator<String> iterator = master.iterator(); iterator.hasNext(); ) {
 //            String st = iterator.next();
 //            for (int i = 0; i < st.length(); i++) {
