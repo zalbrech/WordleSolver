@@ -14,10 +14,14 @@ public class Tester {
     public Tester(String solution) {
         this.mean = 0;
         this.solution = solution;
-        System.out.println(this.solution);
+//        System.out.println(this.solution);
         for(int i = 0; i < solution.length(); i++) {
             quantMap.put(solution.charAt(i), quantMap.getOrDefault(solution.charAt(i),0) +1);
         }
+    }
+
+    public String getSolution() {
+        return solution;
     }
 
     public double getMean() {
@@ -51,7 +55,7 @@ public class Tester {
             }
         }
 
-        System.out.println(new String(grid));
+//        System.out.println(new String(grid));
         return new String(grid);
 
     }

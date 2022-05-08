@@ -1,5 +1,6 @@
 //TODO: organize method order
 //TODO: clean up comments
+//TODO: add blackList index to solve tatty/daddy bug
 
 package com.company;
 
@@ -16,7 +17,11 @@ public class Solver {
 
     private final List<Set<Character>> yellowList;
     private final List<Set<Character>> greenList;
+    private final List<Set<Character>> blackList;
     private List<Map<Character, Integer>> posList;
+
+    private List<Map<Character, Integer>> allList;
+
 
     private Map<String, Integer> dict;
     private Map<Character, Integer> freq;
@@ -27,6 +32,8 @@ public class Solver {
 
     private final PriorityQueue<Map.Entry<Character, Integer>> freqPq;
 
+    private final Set<String> allWords;
+
     private String best;
 
     public Solver() {
@@ -36,6 +43,7 @@ public class Solver {
 
         this.yellowList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
         this.greenList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
+        this.blackList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
 
         this.freq = new HashMap<>(); // count frequency of each letter
         this.master = new HashSet<>(); // master list of possible words, used to repopulate dict & freq after each guess
@@ -45,12 +53,18 @@ public class Solver {
         this.duplicates = new HashSet<>();
         this.singles = new HashSet<>();
 
+        this.allWords = new HashSet<>();
+
         String s;
         // populate master list
         try {
             BufferedReader input = new BufferedReader(new FileReader("src/main/java/words.txt"));
             while ((s = input.readLine()) != null) {
                 master.add(s);
+            }
+            input = new BufferedReader(new FileReader("src/main/java/words.txt"));
+            while((s = input.readLine()) != null) {
+                allWords.add(s);
             }
 
         } catch (Exception e) {
@@ -65,13 +79,22 @@ public class Solver {
         this.dict = new HashMap<>(); // list of possible words with scores
         this.freq = new HashMap<>();
         this.posList = List.of(new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
+        this.allList = List.of(new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
+
 
         for (String s : this.master) {
             for (int i = 0; i < s.length(); i++) {
                 this.posList.get(i).put(s.charAt(i), this.posList.get(i).getOrDefault(s.charAt(i), 0) + 1); // count index position of each letter
                 this.freq.put(s.charAt(i), this.freq.getOrDefault(s.charAt(i), 0) + 1); // count frequency of each letter
+//                this.allList.get(i).put(s.charAt(i), this.allList.get(i).getOrDefault(s.charAt(i), 0) + 1); // count index position of each letter
+
             }
         }
+//        for (String s : this.allWords) {
+//            for(int i = 0; i < s.length(); i++) {
+//                this.posList.get(i).put(s.charAt(i), this.posList.get(i).getOrDefault(s.charAt(i), 0) + 1); // count index position of each letter
+//            }
+//        }
         for (String s : this.master) {
             dict.put(s, this.score(s)); // add word to dictionary
         }
@@ -84,8 +107,8 @@ public class Solver {
     private int score(String s) {
         int score = 0;
         for (int i = 0; i < s.length(); i++) {
-//            score += posList.get(i).get(s.charAt(i));
-            score += posList.get(i).get(s.charAt(i)) + (freq.get(s.charAt(i)) / 8);
+//            score += allList.get(i).get(s.charAt(i));
+            score += posList.get(i).get(s.charAt(i));
         }
         return score;
     }
@@ -107,6 +130,8 @@ public class Solver {
     }
 
     private String findBest() {
+
+//        this.best = Collections.min(dict.entrySet(), Map.Entry.comparingByValue()).getKey();
         PriorityQueue<Map.Entry<String, Integer>> pqScore = new PriorityQueue<>(Comparator.comparingInt(Map.Entry::getValue));
         for (Map.Entry<String, Integer> e : dict.entrySet()) {
             pqScore.offer(e);
@@ -135,6 +160,8 @@ public class Solver {
     }
 
     public void addDuplicate(char c) {this.duplicates.add(c);}
+
+    public void addBlackIndex(int i, char c) { this.blackList.get(i).add(c); }
 
     public void addYellowIndex(int i, char c) { this.yellowList.get(i).add(c); }
 
@@ -173,7 +200,8 @@ public class Solver {
     private boolean checkIndex(String s) { // if s has letters in the wrong index it is removed
         for (int i = 0; i < s.length(); i++) {
             if (yellowList.get(i).contains(s.charAt(i)) ||
-                    (!greenList.get(i).isEmpty() && !greenList.get(i).contains(s.charAt(i)))) {
+                blackList.get(i).contains(s.charAt(i)) ||
+                (!greenList.get(i).isEmpty() && !greenList.get(i).contains(s.charAt(i)))) {
                 return true;
             }
         }
@@ -186,7 +214,7 @@ public class Solver {
             if(blackLetters.contains(s.charAt(i))) {
                 if(!greenLetters.contains(s.charAt(i)) && !yellowLetters.contains(s.charAt(i))) { // letter is black and solution contains only 1
                     return true;
-                } if(checkSingles(s.charAt(i), false)) { // remove words with duplicate letters
+                } if(checkSingles(s.charAt(i))) { // remove words with duplicate letters
                     flag = countSingles(s);
                 }
             }
@@ -194,12 +222,17 @@ public class Solver {
         return flag;
     }
 
-    public boolean checkSingles(char c, boolean isBlack) {
-        if (isBlack) {
-            return yellowLetters.contains(c) || greenLetters.contains(c);
-        }
-        return blackLetters.contains(c);
+    public boolean checkSingles(char c) {
+        if(duplicates.contains(c)) return false;
+        return blackLetters.contains(c) && (greenLetters.contains(c) || yellowLetters.contains(c));
     }
+
+//    public boolean checkSingles(char c, boolean isBlack) {
+//        if (isBlack) {
+//            return yellowLetters.contains(c) || greenLetters.contains(c);
+//        }
+//        return blackLetters.contains(c);
+//    }
 
     public boolean countSingles(String s) {
         for(char c : singles) {
@@ -240,9 +273,10 @@ public class Solver {
             switch (result.charAt(i)) {
                 case 'B':
                     this.addBlackLetter(guess.charAt(i));
-                    if(this.checkSingles(guess.charAt(i), true)) {
-                        this.addSingle(guess.charAt(i));
-                    }
+                    this.addBlackIndex(i, guess.charAt(i));
+//                    if(this.checkSingles(guess.charAt(i), true)) {
+//                        this.addSingle(guess.charAt(i));
+//                    }
 //                    System.out.println("adding " + guess.charAt(i) + " to black letters");
 //                    System.out.println(this.blackLetters);
                     break;
@@ -250,9 +284,9 @@ public class Solver {
                     if(this.checkDuplicates(guess.charAt(i))) {
                         this.addDuplicate(guess.charAt(i));
                     }
-                    if(this.checkSingles(guess.charAt(i), false)) {
-                        this.addSingle(guess.charAt(i));
-                    }
+//                    if(this.checkSingles(guess.charAt(i), false)) {
+//                        this.addSingle(guess.charAt(i));
+//                    }
                     this.addYellowIndex(i, guess.charAt(i));
                     this.addYellowLetter(guess.charAt(i));
                     break;
@@ -260,21 +294,25 @@ public class Solver {
                     if(this.checkDuplicates(guess.charAt(i))) {
                         this.addDuplicate(guess.charAt(i));
                     }
-                    if(this.checkSingles(guess.charAt(i), false)) {
-                        this.addSingle(guess.charAt(i));
-                    }
+//                    if(this.checkSingles(guess.charAt(i), false)) {
+//                        this.addSingle(guess.charAt(i));
+//                    }
                     this.addGreenIndex(i, guess.charAt(i));
                     this.addGreenLetter(guess.charAt(i));
-                    // THIS MIGHT BE A BUG. TRYING TO SOLVE FOLLOWING ISSUE:
-                    // s l ate (b y bbg) -> be ll e (gb bg g)
-                    // [l] was added to duplicates and singles, but should only be in singles
-//                    yellowLetters.remove(guess.charAt(i));
                     greenCount++;
                     break;
                 default:
                     break;
             }
         }
+        for(int i = 0; i < guess.length(); i++) {
+            if(this.checkSingles(guess.charAt(i))) {
+                this.addSingle(guess.charAt(i));
+            }
+        }
+
+//        System.out.println("duplicates: " + this.duplicates);
+//        System.out.println("singles: " + this.singles);
 
         if(this.master.size() < 2) return greenCount;
 
