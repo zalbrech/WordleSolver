@@ -20,6 +20,14 @@ public class Tester {
         }
     }
 
+    public void setSolution(String newSolution) {
+        this.solution = newSolution;
+        quantMap = new HashMap<>();
+        for(int i = 0; i < solution.length(); i++) {
+            quantMap.put(solution.charAt(i), quantMap.getOrDefault(solution.charAt(i),0) +1);
+        }
+    }
+
     public String getSolution() {
         return solution;
     }

@@ -30,6 +30,14 @@ public class Guess {
         this.infoMap = infoMap;
     }
 
+    public Map<String, Guess> getInfoMap() {
+        return infoMap;
+    }
+
+    public String[] getBoards() {
+        return boards;
+    }
+
     private void initBoards() {
         this.boards = new String[] {
                 "BBBBB", "BBBBY", "BBBBG", "BBBYB", "BBBYY",

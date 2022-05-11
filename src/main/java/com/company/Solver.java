@@ -15,9 +15,9 @@ public class Solver {
     private Set<Character> greenLetters; // candidate must contain all green letters
 
 
-    private final List<Set<Character>> yellowList;
-    private final List<Set<Character>> greenList;
-    private final List<Set<Character>> blackList;
+    private List<Set<Character>> yellowList;
+    private List<Set<Character>> greenList;
+    private List<Set<Character>> blackList;
     private List<Map<Character, Integer>> posList;
 
     private List<Map<Character, Integer>> allList;
@@ -27,8 +27,8 @@ public class Solver {
     private Map<Character, Integer> freq;
     private final Set<String> master;
 
-    private final Set<Character> duplicates;
-    private final Set<Character> singles;
+    private Set<Character> duplicates;
+    private Set<Character> singles;
 
     private final PriorityQueue<Map.Entry<Character, Integer>> freqPq;
 
@@ -57,25 +57,31 @@ public class Solver {
 
         String s;
         // populate master list
+        this.populateMaster();
+
+        this.populateLists();
+        this.findBest();
+    }
+
+    public void populateMaster() {
+        String s;
         try {
             BufferedReader input = new BufferedReader(new FileReader("src/main/java/words.txt"));
             while ((s = input.readLine()) != null) {
                 master.add(s);
+//                System.out.println(s + " added");
             }
-            input = new BufferedReader(new FileReader("src/main/java/words.txt"));
-            while((s = input.readLine()) != null) {
-                allWords.add(s);
-            }
+//            input = new BufferedReader(new FileReader("src/main/java/words.txt"));
+//            while((s = input.readLine()) != null) {
+//                allWords.add(s);
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        this.populate();
-        this.findBest();
     }
 
-    private void populate() {
+    private void populateLists() {
         this.dict = new HashMap<>(); // list of possible words with scores
         this.freq = new HashMap<>();
         this.posList = List.of(new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
@@ -101,7 +107,9 @@ public class Solver {
 
 //        System.out.println(this.master);
 //        this.printScores();
-        this.findBest();
+
+        //TODO: UNCOMMENT findBest()!!!!
+//        this.findBest();
     }
 
     private int score(String s) {
@@ -145,6 +153,10 @@ public class Solver {
     public void removeWord(String word) {
         this.master.remove(word);
         this.dict.remove(word);
+    }
+
+    public int getMasterSize() {
+        return this.master.size();
     }
 
     public void addBlackLetter(char c) {
@@ -274,19 +286,11 @@ public class Solver {
                 case 'B':
                     this.addBlackLetter(guess.charAt(i));
                     this.addBlackIndex(i, guess.charAt(i));
-//                    if(this.checkSingles(guess.charAt(i), true)) {
-//                        this.addSingle(guess.charAt(i));
-//                    }
-//                    System.out.println("adding " + guess.charAt(i) + " to black letters");
-//                    System.out.println(this.blackLetters);
                     break;
                 case 'Y':
                     if(this.checkDuplicates(guess.charAt(i))) {
                         this.addDuplicate(guess.charAt(i));
                     }
-//                    if(this.checkSingles(guess.charAt(i), false)) {
-//                        this.addSingle(guess.charAt(i));
-//                    }
                     this.addYellowIndex(i, guess.charAt(i));
                     this.addYellowLetter(guess.charAt(i));
                     break;
@@ -294,9 +298,6 @@ public class Solver {
                     if(this.checkDuplicates(guess.charAt(i))) {
                         this.addDuplicate(guess.charAt(i));
                     }
-//                    if(this.checkSingles(guess.charAt(i), false)) {
-//                        this.addSingle(guess.charAt(i));
-//                    }
                     this.addGreenIndex(i, guess.charAt(i));
                     this.addGreenLetter(guess.charAt(i));
                     greenCount++;
@@ -324,54 +325,23 @@ public class Solver {
         return greenCount;
     }
 
+    //TODO: this architecture is breaking SolverTest
     public void update() {
         master.removeIf(s -> checkGreenYellowLetters(s) || checkIndex(s) || checkBlackAndSingleLetters(s) || countDuplicates(s));
 
         this.greenLetters = new HashSet<>();
         this.yellowLetters = new HashSet<>();
         this.blackLetters = new HashSet<>();
-        // -> Keep old code until more thorough testing has been done
 
-//        for (Iterator<String> iterator = master.iterator(); iterator.hasNext(); ) {
-//            String st = iterator.next();
-//            for (int i = 0; i < st.length(); i++) {
-//                if (!checkYellow(this.yellowLetters, st) || !checkGreen(this.greenLetters, st)) {
-//                    iterator.remove();
-//                    dict.remove(st);
-//                    break;
-//                }
-//                if (blackLetters.contains(st.charAt(i))) {
-//                    if (!greenLetters.contains(st.charAt(i)) && !yellowLetters.contains(st.charAt(i))) {
-//                        iterator.remove();
-//                        dict.remove(st);
-//                        break;
-//                    } else if (yellowLetters.contains(st.charAt(i))) {
-//                        char target = st.charAt(i);
-//                        for (Iterator<String> multIterator = master.iterator(); multIterator.hasNext(); ) {
-//                            int count = 0;
-//                            String s2 = multIterator.next();
-//                            for (int j = 0; j < s2.length(); j++) {
-//                                if (s2.charAt(j) == target) count++;
-//                            }
-//                            if (count > 1) {
-//                                iterator.remove();
-//                                dict.remove(s2);
-//                                break;
-//                            }
-//                        }
-//                    }
-//                } else if (yellowList.get(i).contains(st.charAt(i))) {
-//                    iterator.remove();
-//                    dict.remove(st);
-//                    break;
-//                } else if (!greenList.get(i).isEmpty() && !greenList.get(i).contains(st.charAt(i))) {
-//                    iterator.remove();
-//                    dict.remove(st);
-//                    break;
-//
-//                }
-//            }
-//        }
-        this.populate();
+        this.yellowList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
+        this.greenList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
+        this.blackList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
+
+        this.duplicates = new HashSet<>();
+        this.singles = new HashSet<>();
+
+        this.populateLists();
     }
+
+
 }
