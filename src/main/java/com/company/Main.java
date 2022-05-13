@@ -21,6 +21,7 @@ public class Main {
 
         List<String> words = wordList.getSolutionList();
         List<String> possibleGuesses = wordList.getPossibleGuesses();
+        List<String> solutionList = wordList.getSolutionList();
 
         int guesses = 0, wins = 0, loss = 0, total = 0, n = 2315, maxGuesses = 6;
         List<String> missedWords = new ArrayList<>();
@@ -31,13 +32,18 @@ public class Main {
         Map<String, Integer> guessMap = new HashMap<>();
         PriorityQueue<Map.Entry<String, Integer>> pqScore = new PriorityQueue<>((a,b) -> b.getValue() - a.getValue());
 
+        List<String> top25Guesses = solver.getTop25Guesses();
+
+
+        // FIND BEST FIRST GUESS
+
         try {
             BufferedWriter output = new BufferedWriter(new FileWriter("src/main/java/firstguess.txt",true));
 //            String s = "slate";
-            for(String s : possibleGuesses) {
+            for(String s : top25Guesses) {
                 System.out.println(++index + " " + new Date());
-                for(int i = 0; i < wordList.getSolutionList().size(); i++) {
-                    tester.setSolution(wordList.getSolutionList().get(i));
+                for(int i = 0; i < solutionList.size(); i++) {
+                    tester.setSolution(solutionList.get(i));
                     result = tester.processGuess(s);
                     solver.processResult(s,result);
                     guessMap.put(s, guessMap.getOrDefault(s,0) + solver.getMasterSize());
@@ -48,13 +54,13 @@ public class Main {
 
             for(Map.Entry<String, Integer> e : guessMap.entrySet()) {
                 pqScore.offer(e);
-                if(pqScore.size() > 20) pqScore.remove();
+                if(pqScore.size() > 25) pqScore.remove();
             }
 
             while(!pqScore.isEmpty()) {
                 Map.Entry<String,Integer> e = pqScore.remove();
                 double d = e.getValue();
-                output.write( e.getKey() + ": " + (d/n));
+                output.write( e.getKey() + ": " + (d/n) + "\n");
             }
             output.close();
 
@@ -75,6 +81,8 @@ public class Main {
         }
 
 
+//        OLD TEST - DON'T UNCOMMENT
+
 //        String s = wordList.getRandomSolution();
 //        for(int i = 0; i < 10000; i++) {
 //            tester.setSolution(wordList.getRandomSolution());
@@ -85,10 +93,10 @@ public class Main {
 //            solver.populateMaster();
 //        }
 
-
         System.out.println(new Date());
 
 //        auto test
+
 //        try {
 //            for(String s : words) {
 //                won = false;
@@ -128,7 +136,7 @@ public class Main {
 //        missedWords.forEach(System.out::println);
 
 
-//        manual test
+//        manual solve - 99.3% solve rate
 //        while (guesses < maxGuesses && !won) {
 //            System.out.println("\nEnter a guess " + "(" + "I suggest " + solver.getBest() + ")");
 //            guess = scanner.nextLine().toLowerCase();
@@ -151,4 +159,6 @@ public class Main {
 //            loss++;
 //        }
     }
+
+
 }

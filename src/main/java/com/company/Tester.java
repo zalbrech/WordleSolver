@@ -63,9 +63,7 @@ public class Tester {
             }
         }
 
-//        System.out.println(new String(grid));
         return new String(grid);
-
     }
 
 

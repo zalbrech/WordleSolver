@@ -5,10 +5,13 @@
 package com.company;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.util.*;
 
 public class Solver {
+
+    private final char[] ALPHABET = new char[]{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
     private Set<Character> blackLetters; // if blackLetters contains letter in word, discard it
     private Set<Character> yellowLetters; // candidate must contain all yellow letters
@@ -20,7 +23,7 @@ public class Solver {
     private List<Set<Character>> blackList;
     private List<Map<Character, Integer>> posList;
 
-    private List<Map<Character, Integer>> allList;
+    private List<String> top25Guesses;
 
 
     private Map<String, Integer> dict;
@@ -33,6 +36,7 @@ public class Solver {
     private final PriorityQueue<Map.Entry<Character, Integer>> freqPq;
 
     private final Set<String> allWords;
+    private Map<String, Integer> allWordsDict;
 
     private String best;
 
@@ -41,9 +45,15 @@ public class Solver {
         this.yellowLetters = new HashSet<>(); // candidate must contain all yellow letters
         this.greenLetters = new HashSet<>(); // candidate must contain all green letters
 
+        System.out.println("Letters lists created");
+
         this.yellowList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
         this.greenList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
         this.blackList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
+
+        System.out.println("Index lists created");
+
+
 
         this.freq = new HashMap<>(); // count frequency of each letter
         this.master = new HashSet<>(); // master list of possible words, used to repopulate dict & freq after each guess
@@ -55,15 +65,29 @@ public class Solver {
 
         this.allWords = new HashSet<>();
 
+//        System.out.println("All words created");
+
         String s;
         // populate master list
         this.populateMaster();
-
+        this.populateAllWords();
         this.populateLists();
         this.findBest();
     }
 
+
+    private void populateAllWords() {
+        String s;
+        try(BufferedReader input = new BufferedReader(new FileReader("src/main/java/allwords.txt"))) {
+            while ((s = input.readLine()) != null) {
+                allWords.add(s);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
     public void populateMaster() {
+//        System.out.println("In populateMaster()");
         String s;
         try {
             BufferedReader input = new BufferedReader(new FileReader("src/main/java/words.txt"));
@@ -71,21 +95,29 @@ public class Solver {
                 master.add(s);
 //                System.out.println(s + " added");
             }
-//            input = new BufferedReader(new FileReader("src/main/java/words.txt"));
-//            while((s = input.readLine()) != null) {
-//                allWords.add(s);
-//            }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
+//        System.out.println("Populate master finished");
     }
 
     private void populateLists() {
+//        System.out.println("In populateLists()");
         this.dict = new HashMap<>(); // list of possible words with scores
+        this.allWordsDict = new HashMap<>();
+        this.top25Guesses = new ArrayList<>();
         this.freq = new HashMap<>();
+
+
         this.posList = List.of(new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
-        this.allList = List.of(new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
+
+        for(Map<Character,Integer> m : posList) {
+            for(char c : ALPHABET) {
+                m.put(c,0);
+            }
+        }
+
+//        System.out.println("Lists created");
 
 
         for (String s : this.master) {
@@ -105,8 +137,29 @@ public class Solver {
             dict.put(s, this.score(s)); // add word to dictionary
         }
 
+//        System.out.println("master scored");
+
+
+        for (String s : this.allWords) {
+//            System.out.println(s);
+            allWordsDict.put(s, this.score(s));
+        }
+
+//        System.out.println("Scoring completed");
+
+        PriorityQueue<Map.Entry<String, Integer>> pqScore = new PriorityQueue<>(Comparator.comparingInt(Map.Entry::getValue));
+        for(Map.Entry<String, Integer> e : allWordsDict.entrySet()) {
+            pqScore.offer(e);
+            if(pqScore.size() > 25) pqScore.remove();
+        }
+
+        for(Map.Entry<String, Integer> e : pqScore) {
+            this.top25Guesses.add(e.getKey());
+        }
+
+
 //        System.out.println(this.master);
-//        this.printScores();
+//        this.printScores(allWordsDict);
 
         //TODO: UNCOMMENT findBest()!!!!
 //        this.findBest();
@@ -122,10 +175,11 @@ public class Solver {
     }
 
     // internal method for testing only
-    private void printScores() {
+    private void printScores(Map<String, Integer> map) {
         PriorityQueue<Map.Entry<String, Integer>> pqScore = new PriorityQueue<>(Comparator.comparingInt(Map.Entry::getValue));
-        for(Map.Entry<String, Integer> e : dict.entrySet()) {
+        for(Map.Entry<String, Integer> e : map.entrySet()) {
             pqScore.offer(e);
+            if(pqScore.size() > 25) pqScore.remove();
         }
 
         while(!pqScore.isEmpty()) {
@@ -135,6 +189,10 @@ public class Solver {
 
     public Set<String> getMaster() {
         return this.master;
+    }
+
+    public List<String> getTop25Guesses() {
+        return this.top25Guesses;
     }
 
     private String findBest() {
