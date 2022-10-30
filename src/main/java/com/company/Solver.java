@@ -45,13 +45,13 @@ public class Solver {
         this.yellowLetters = new HashSet<>(); // candidate must contain all yellow letters
         this.greenLetters = new HashSet<>(); // candidate must contain all green letters
 
-        System.out.println("Letters lists created");
+//        System.out.println("Letters lists created");
 
         this.yellowList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
         this.greenList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
         this.blackList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
 
-        System.out.println("Index lists created");
+//        System.out.println("Index lists created");
 
 
 
@@ -111,6 +111,7 @@ public class Solver {
 
         this.posList = List.of(new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>());
 
+        // initialize to avoid error from words starting with 'x'
         for(Map<Character,Integer> m : posList) {
             for(char c : ALPHABET) {
                 m.put(c,0);
@@ -162,7 +163,7 @@ public class Solver {
 //        this.printScores(allWordsDict);
 
         //TODO: UNCOMMENT findBest()!!!!
-//        this.findBest();
+        this.findBest();
     }
 
     private int score(String s) {
