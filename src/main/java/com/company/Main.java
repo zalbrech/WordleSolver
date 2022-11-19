@@ -11,13 +11,12 @@ import java.util.*;
 
 public class Main {
 
-
+    static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
         Solver solver = new Solver();
         Tester tester = new Tester("");
         WordList wordList = new WordList();
-        Scanner scanner = new Scanner(System.in);
 
         List<String> words = wordList.getSolutionList();
         List<String> possibleGuesses = wordList.getPossibleGuesses();
@@ -94,16 +93,36 @@ public class Main {
 
 //        System.out.println(new Date());
 
+        System.out.println("Welcome to Wordle Solver!\n" +
+                           "Select an option:\n" +
+                           "1) Manual Solve\n" +
+                           "2) Auto Test (test scoring algorithm)");
 
-        manualSolve();
+        boolean valid = false;
+        int input = 0;
+        while(!valid) {
+            input = scanner.nextInt();
+            if(input == 1 || input == 2) {
+                valid = true;
+            }
+            System.out.println("Please select either 1 or 2");
+        }
+
+        if(input == 1) {
+            manualSolve();
+        } else {
+            autoTest();
+        }
+
+//        manualSolve();
 //        autoTest();
 
     }
 
-//    manual solve - 99.3% solve rate
+//    manual solve - 99.4% solve rate
 
     public static void manualSolve() {
-        Scanner scanner = new Scanner(System.in);
+
         String guess, result;
 
         Solver solver = new Solver();

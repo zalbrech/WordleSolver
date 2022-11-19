@@ -1,6 +1,5 @@
 //TODO: organize method order
 //TODO: clean up comments
-//TODO: add blackList index to solve tatty/daddy bug
 
 package com.company;
 
