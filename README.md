@@ -16,5 +16,5 @@ Currently, there are 12 solutions that it cannot find:
 11) watch
 12) wound
 
-I am currently working on implementing a Linked List structure where each starting node will contain an ideally optimal guess for all possible board states
+I am currently working on implementing a Linked List structure where each starting node will contain an (ideally) optimal guess for all possible board states
 
