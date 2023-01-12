@@ -1,5 +1,5 @@
 //TODO: Optimize guessing algorithm
-
+//TODO: Input error handling
 package com.company;
 
 import com.company.Solver;
@@ -100,22 +100,36 @@ public class Main {
 
         boolean valid = false;
         int input = 0;
-        while(!valid) {
-            input = scanner.nextInt();
-            if(input == 1 || input == 2) {
-                valid = true;
+        try {
+            while(!valid) {
+                input = scanner.nextInt();
+                if(input == 1 || input == 2) {
+                    valid = true;
+                } else {
+                    System.out.println("Please select either 1 or 2");
+                }
             }
+
+            if(input == 1) {
+                System.out.println("Manual Solve selected");
+                manualSolve();
+            } else {
+                System.out.println("Auto Test selected");
+                System.out.println("Auto Test in progress");
+                autoTest();
+            }
+        } catch(InputMismatchException e) {
             System.out.println("Please select either 1 or 2");
         }
 
-        if(input == 1) {
-            manualSolve();
-        } else {
-            autoTest();
-        }
 
 //        manualSolve();
 //        autoTest();
+
+
+    }
+
+    public static void init() {
 
     }
 
@@ -131,24 +145,28 @@ public class Main {
 
         while (guesses < maxGuesses && !won) {
             System.out.println("\nEnter a guess " + "(" + "I suggest " + solver.getBest() + ")");
-            guess = scanner.nextLine().toLowerCase();
+            guess = scanner.next().toLowerCase();
             guesses++;
+
             System.out.println("\nEnter:\n" +
                     "B for black square\n" +
                     "Y for yellow square\n" +
                     "G for green square\n");
-            result = scanner.nextLine().toUpperCase();
+            result = scanner.next().toUpperCase();
+            System.out.println("\nProcessing guess \"" + guess + "\"");
             int greenCount = solver.processResult(guess, result);
 
             if (greenCount == 5) {
-                System.out.println("Congrats - you won in " + guesses + " guesses!");
+                System.out.println("\nCongrats - you won in " + guesses + " guesses!");
                 won = true;
                 wins++;
             }
         }
         if (guesses == maxGuesses && !won) {
-            System.out.println("You lost :(");
+            System.out.println("\nYou lost :(");
         }
+
+        scanner.close();
     }
 
     // Test that uses scoring system to attempt to solve all possible solutions
