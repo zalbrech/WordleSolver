@@ -46,6 +46,7 @@ public class Solver {
 
 //        System.out.println("Letters lists created");
 
+        // List of letters for each index with respect to their color
         this.yellowList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
         this.greenList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
         this.blackList = List.of(new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>(),new HashSet<>());
@@ -122,8 +123,10 @@ public class Solver {
 
         for (String s : this.master) {
             for (int i = 0; i < s.length(); i++) {
-                this.posList.get(i).put(s.charAt(i), this.posList.get(i).getOrDefault(s.charAt(i), 0) + 1); // count index position of each letter
-                this.freq.put(s.charAt(i), this.freq.getOrDefault(s.charAt(i), 0) + 1); // count frequency of each letter
+                // count index position of each letter
+                this.posList.get(i).put(s.charAt(i), this.posList.get(i).getOrDefault(s.charAt(i), 0) + 1);
+                // count frequency of each letter
+                this.freq.put(s.charAt(i), this.freq.getOrDefault(s.charAt(i), 0) + 1);
 //                this.allList.get(i).put(s.charAt(i), this.allList.get(i).getOrDefault(s.charAt(i), 0) + 1); // count index position of each letter
 
             }
@@ -134,7 +137,8 @@ public class Solver {
 //            }
 //        }
         for (String s : this.master) {
-            dict.put(s, this.score(s)); // add word to dictionary
+            // add word to dictionary with relevant score
+            dict.put(s, this.score(s));
         }
 
 //        System.out.println("master scored");
@@ -162,7 +166,6 @@ public class Solver {
 //        this.printScores(allWordsDict);
 
         //TODO: UNCOMMENT findBest()!!!!
-        this.findBest();
     }
 
     private int score(String s) {
@@ -195,6 +198,7 @@ public class Solver {
         return this.top25Guesses;
     }
 
+    // uses the scoring algorithm to compare all remaining possible valid guesses
     private String findBest() {
 
 //        this.best = Collections.min(dict.entrySet(), Map.Entry.comparingByValue()).getKey();
@@ -267,7 +271,8 @@ public class Solver {
         return !checkYellow(this.yellowLetters, s) || !checkGreen(this.greenLetters, s);
     }
 
-    private boolean checkIndex(String s) { // if s has letters in the wrong index it is removed
+    // if passed String s has letters in the wrong index it is removed
+    private boolean checkIndex(String s) {
         for (int i = 0; i < s.length(); i++) {
             if (yellowList.get(i).contains(s.charAt(i)) ||
                 blackList.get(i).contains(s.charAt(i)) ||
@@ -337,6 +342,7 @@ public class Solver {
         return false;
     }
 
+    // processes result return from previous guess
     public int processResult(String guess, String result) {
         int greenCount = 0;
         for (int i = 0; i < result.length(); i++) {
@@ -399,6 +405,7 @@ public class Solver {
         this.singles = new HashSet<>();
 
         this.populateLists();
+        this.findBest();
     }
 
 
